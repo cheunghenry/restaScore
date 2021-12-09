@@ -4,6 +4,7 @@ body{
     font-family: 'Lato', 'Arial';
     padding: 0;
     margin: 0;
+    overflow-x: hidden;
 }
 
 h1{
@@ -12,9 +13,23 @@ h1{
 
 .mainText{
     margin: 0 auto;
-    width: 35%;
+    width: 40rem;
     height: 100vh;
     display: grid;
     justify-content: center;
     align-items: center;
+}
+
+.iframeWrapper{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+iframe{
+    margin: 0 auto;
+    display: block;
+    overflow: hidden;
 }
