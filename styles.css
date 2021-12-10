@@ -11,17 +11,44 @@ h1{
     font-size: 20px;
 }
 
+.titlePage{
+    margin: 0 auto;
+    width: 40rem;
+    height: 100vh;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.background{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-image: url("bg.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+    z-index: -1;
+}
+
+.background::before{
+    filter: blur(8px);
+  -webkit-filter: blur(8px);
+}
+
 .mainText{
     margin: 0 auto;
     width: 40rem;
-    /*height: 100vh;*/
+    height: 100vh;
     display: grid;
     justify-content: center;
     align-items: center;
 }
 
 .iframeWrapper{
-    height: 100vh;
+    height: 90vh;
     width: 100vw;
     display: flex;
     align-items: center;
@@ -32,4 +59,13 @@ iframe{
     margin: 0 auto;
     display: block;
     overflow: hidden;
+}
+
+.abstract{
+    display: grid;
+    grid-template-columns: 45vw 45vw;
+}
+
+.abstract > div{
+    margin: 0 2.5em;
 }
