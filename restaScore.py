@@ -9,7 +9,6 @@ import pandas as pd
 import folium
 from folium.plugins import MarkerCluster
 from flask import Flask
-import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 
@@ -21,7 +20,7 @@ def index():
 
 def dataCleanUp():
     #DOMH CAMIS and Open_Restaurant_App Food Service Establishment Permit # same. Use this to merge.
-    inspectResult = pd.read_csv("DOHMH_New_York_City_Restaurant_Inspection_Results - Copy.csv")
+    inspectResult = pd.read_csv("DOHMH_New_York_City_Restaurant_Inspection_Results_Original.csv")
     inspectResult = inspectResult[pd.notnull(inspectResult['DBA'])] #Remove rows where DBA (Restaurant Name) is null
     inspectResult = inspectResult[pd.notnull(inspectResult['Longitude'])] #remove rows where Longitude is null
     inspectResult = inspectResult[pd.notnull(inspectResult['Latitude'])] #remove rows where Latitude is null
@@ -34,25 +33,29 @@ def dataCleanUp():
     inspectResult['newGrade'] = inspectResult.apply(lambda inspectResult: 'A' if 13 >= inspectResult['SCORE'] >= 0 else ('B' if 27 >= inspectResult['SCORE'] >= 14 else 'C'), axis = 1)
     inspectResult['GRADE'].fillna(inspectResult['newGrade'], inplace = True)
     inspectResult = inspectResult.drop(columns = ['newGrade', 'GRADE DATE', 'VIOLATION CODE', 'RECORD DATE'], axis = 1)
+    inspectResult['CAMIS'] = inspectResult['CAMIS'].astype(str)
 
     inspectRes = inspectResult
-
-
+    print(type(inspectRes['CAMIS'][0]))
+    
     #Covid outside seating applications
-    filteredCol2 = ['Restaurant Name', 'Legal Business Name', 'Doing Business As (DBA)', 'Business Address', 'Approved for Sidewalk Seating', 'Approved for Roadway Seating']
+    filteredCol2 = ['Restaurant Name', 'Legal Business Name', 'Doing Business As (DBA)', 'Business Address', 'Approved for Sidewalk Seating', 'Approved for Roadway Seating','Food Service Establishment Permit #']
     covidApp = pd.read_csv("Open_Restaurant_Applications.csv", usecols = filteredCol2)
-
+    covidApp = covidApp.rename(columns = {'Food Service Establishment Permit #' : 'CAMIS'})
     cApp = covidApp
-
+    print(type(covidApp['CAMIS'][0]))
+    cApp.to_csv("output5.csv", index=False)
+    
     inspectRes.reset_index(drop = True, inplace = True)
     covidApp.reset_index(drop = True, inplace = True)
-    concatCSV = pd.concat([inspectRes, covidApp],axis=1)
+    #concatCSV = pd.concat([inspectRes, covidApp],axis=1)
+    concatCSV = pd.DataFrame.merge(inspectRes, cApp, on='CAMIS')
     concatCSV = concatCSV.drop_duplicates(subset=['CAMIS'], keep='first')
     concatCSV = concatCSV.drop(columns = ['Community Board', 'Council District', 'Census Tract', 'BIN', 'BBL', 'NTA', 'Restaurant Name', 'Legal Business Name', 'Doing Business As (DBA)', 'Business Address'], axis=1)
     concatCSV = concatCSV[pd.notnull(concatCSV['SCORE'])]
     concatCSV['Approved for Sidewalk Seating'].fillna('N/A', inplace = True)
     concatCSV['Approved for Roadway Seating'].fillna('N/A', inplace = True)
-
+    concatCSV.to_csv("output6.csv", index=False)
     return concatCSV
 
 
