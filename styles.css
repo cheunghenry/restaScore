@@ -72,3 +72,10 @@ iframe{
     margin: 0 2.5em;
 }
 
+.graph > img{
+    float: left;
+}
+
+.grapDesc{
+    display: grid;
+}
