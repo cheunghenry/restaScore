@@ -9,6 +9,8 @@ import pandas as pd
 import folium
 from folium.plugins import MarkerCluster
 from flask import Flask
+import matplotlib.pyplot as plt
+
 
 app = Flask(__name__)
 
@@ -36,30 +38,31 @@ def dataCleanUp():
     inspectResult['CAMIS'] = inspectResult['CAMIS'].astype(str)
 
     inspectRes = inspectResult
-    print(type(inspectRes['CAMIS'][0]))
     
     #Covid outside seating applications
     filteredCol2 = ['Restaurant Name', 'Legal Business Name', 'Doing Business As (DBA)', 'Business Address', 'Approved for Sidewalk Seating', 'Approved for Roadway Seating','Food Service Establishment Permit #']
     covidApp = pd.read_csv("Open_Restaurant_Applications.csv", usecols = filteredCol2)
     covidApp = covidApp.rename(columns = {'Food Service Establishment Permit #' : 'CAMIS'})
     cApp = covidApp
-    print(type(covidApp['CAMIS'][0]))
-    cApp.to_csv("output5.csv", index=False)
     
+    #merging both files
     inspectRes.reset_index(drop = True, inplace = True)
     covidApp.reset_index(drop = True, inplace = True)
-    #concatCSV = pd.concat([inspectRes, covidApp],axis=1)
     concatCSV = pd.DataFrame.merge(inspectRes, cApp, on='CAMIS')
+
+    #cleaning up merged dataset
     concatCSV = concatCSV.drop_duplicates(subset=['CAMIS'], keep='first')
     concatCSV = concatCSV.drop(columns = ['Community Board', 'Council District', 'Census Tract', 'BIN', 'BBL', 'NTA', 'Restaurant Name', 'Legal Business Name', 'Doing Business As (DBA)', 'Business Address'], axis=1)
     concatCSV = concatCSV[pd.notnull(concatCSV['SCORE'])]
     concatCSV['Approved for Sidewalk Seating'].fillna('N/A', inplace = True)
     concatCSV['Approved for Roadway Seating'].fillna('N/A', inplace = True)
-    concatCSV.to_csv("output6.csv", index=False)
+    
+
+
     return concatCSV
 
 
-
+#generates the map / adds markers
 def generateMap(inspectRes):
     count = 0
     NY_map = folium.Map(location=[inspectRes['Latitude'].mean(), inspectRes['Longitude'].mean()], zoom_start=14, control_scale=True)
@@ -77,8 +80,8 @@ def generateMap(inspectRes):
         inspecDate = row['INSPECTION DATE']
         violation = row['VIOLATION DESCRIPTION']
         critical = row['CRITICAL FLAG']
-        popupText = folium.Popup('<b> Name: </b>' + str(name) + '<br/><b> Score: </b>' + str(score) + '<br/><b> Violation: </b>' + str(violation) + '<br/><b> Critical: </b>' + str(critical) + '<br/><b> Cuisine: </b>' + str(cuisine) + '<br/><b> Address: </b>' + str(address) + '<br/><b> Approved for Sidewalk Seating: </b>' + str(sideSeating) + '<br/><b> Approved for Roadway Seating: </b>' + str(outSeating), max_width = 500) 
-        mc.add_child(folium.Marker(location=[lat, lon], popup=popupText))
+        popupText = folium.Popup('<b> Name: </b>' + str(name) + '<br/><b> Score: </b>' + str(score) + '<br/><b> Violation: </b>' + str(violation) + '<br/><b> Critical: </b>' + str(critical) + '<br/><b> Cuisine: </b>' + str(cuisine) + '<br/><b> Address: </b>' + str(address) + '<br/><b> Approved for Sidewalk Seating: </b>' + str(sideSeating) + '<br/><b> Approved for Roadway Seating: </b>' + str(outSeating), max_width = 500) #popup text 
+        mc.add_child(folium.Marker(location=[lat, lon], popup=popupText)) # adds popup and marker on the map
         
         count += 1
         print(count)
@@ -94,7 +97,6 @@ def generateMap(inspectRes):
 if __name__ == '__main__':
     inspectRes = dataCleanUp()
     mapHTML = generateMap(inspectRes)
-    
     app.run(debug=True)
     
-    
+   
