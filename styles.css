@@ -14,7 +14,7 @@ h1{
 .mainText{
     margin: 0 auto;
     width: 40rem;
-    height: 100vh;
+    /*height: 100vh;*/
     display: grid;
     justify-content: center;
     align-items: center;
